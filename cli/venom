@@ -1,0 +1,221 @@
+#!/bin/bash
+# ==============================================================================
+#  VENOM TUNNEL v2.0 — Interactive Terminal CLI & Orchestrator
+#  Command: venom [menu | status | pair <code> | panel | reset-auth | update | uninstall]
+# ==============================================================================
+set -uo pipefail
+
+VER="2.0.0"
+CONF_DIR="/etc/venom"
+PANEL_JSON="$CONF_DIR/panel.json"
+VENOMD="/usr/local/bin/venomd"
+NETPROBE="/usr/local/bin/venom-netprobe"
+SYSOPT="/usr/local/bin/venom-sysopt"
+
+# Neon Venom Palette (ANSI 256-color)
+G=$'\e[38;5;46m'     # Venom Toxic Green
+G2=$'\e[38;5;82m'    # Bright Acid
+C=$'\e[38;5;51m'     # Cyber Cyan
+R=$'\e[38;5;196m'    # Carnage Red
+Y=$'\e[38;5;226m'    # Warning Yellow
+W=$'\e[1;37m'        # Bold White
+D=$'\e[38;5;242m'    # Muted Slate
+N=$'\e[0m'           # Reset
+
+server_ip() {
+  ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}' || hostname -I | awk '{print $1}'
+}
+
+json_val() {
+  local key=$1 file=$2
+  [ -f "$file" ] || return 0
+  grep -oE "\"${key}\"[[:space:]]*:[[:space:]]*\"?[^\",}]+\"?" "$file" | head -n1 | sed -E 's/.*:[[:space:]]*"?([^",}]+)"?/\1/'
+}
+
+banner() {
+  clear 2>/dev/null || true
+  local ip port path pstate
+  ip=$(server_ip)
+  port=$(json_val port "$PANEL_JSON")
+  path=$(json_val secret_path "$PANEL_JSON")
+  pstate=$(systemctl is-active venom-panel 2>/dev/null || echo "inactive")
+  local pcol=$R; [ "$pstate" = "active" ] && pcol=$G
+
+  printf "\n"
+  printf "  %s██╗   ██╗███████╗███╗   ██╗ ██████╗ ███╗   ███╗%s\n" "$G" "$N"
+  printf "  %s██║   ██║██╔════╝████╗  ██║██╔═══██╗████╗ ████║%s\n" "$G" "$N"
+  printf "  %s██║   ██║█████╗  ██╔██╗ ██║██║   ██║██╔████╔██║%s\n" "$G2" "$N"
+  printf "  %s╚██╗ ██╔╝██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║%s\n" "$G2" "$N"
+  printf "  %s ╚████╔╝ ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║%s\n" "$C" "$N"
+  printf "  %s  ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝%s\n" "$C" "$N"
+  printf "  %s━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n" "$D" "$N"
+  printf "  %sVENOM TUNNEL%s %sv%s%s  %s|%s  Polyglot Core %s(Go + Rust + C + TS)%s\n" "$W" "$N" "$G" "$VER" "$N" "$D" "$N" "$D" "$N"
+  printf "  %sServer IP:%s %s%s%s   %sPanel:%s %s● %s%s   %sPort:%s %s%s%s\n" \
+    "$D" "$N" "$W" "${ip:-unknown}" "$N" "$D" "$N" "$pcol" "$pstate" "$N" "$D" "$N" "$C" "${port:-none}" "$N"
+  if [ -n "${port:-}" ] && [ -n "${path:-}" ]; then
+    printf "  %sWeb Panel:%s %shttp://%s:%s/%s/%s\n" "$D" "$N" "$G2" "$ip" "$port" "$path" "$N"
+  fi
+  printf "  %s━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n\n" "$D" "$N"
+}
+
+pause() { printf "\n  %sPress Enter to continue...%s" "$D" "$N"; read -r _; }
+
+show_panel_info() {
+  local ip port path user
+  ip=$(server_ip)
+  port=$(json_val port "$PANEL_JSON")
+  path=$(json_val secret_path "$PANEL_JSON")
+  user=$(json_val username "$PANEL_JSON")
+  printf "  %sWeb Panel Access%s\n" "$W" "$N"
+  printf "  %sURL     :%s %shttp://%s:%s/%s/%s\n" "$D" "$N" "$G" "$ip" "$port" "$path" "$N"
+  printf "  %sUsername:%s %s%s%s\n" "$D" "$N" "$W" "$user" "$N"
+  printf "  %sStatus  :%s %s\n" "$D" "$N" "$(systemctl is-active venom-panel 2>/dev/null || echo inactive)"
+}
+
+quick_create_backhaul() {
+  printf "\n  %s>> Quick Launch: Backhaul v0.7.2 WSSMux (Recommended)%s\n\n" "$G" "$N"
+  local name role remote cport ports token
+  read -rp "  Tunnel name [bh1]: " name; name=${name:-bh1}
+  read -rp "  Role (1=Iran Server, 2=Foreign Client) [1]: " role
+  [ "${role:-1}" = "2" ] && role="foreign" || role="iran"
+  read -rp "  Control port [443]: " cport; cport=${cport:-443}
+  if [ "$role" = "iran" ]; then
+    read -rp "  Ports (comma-separated, e.g. 8084,8444,900): " ports
+    token=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40)
+    printf "\n  %sGenerated 40-char Token:%s %s%s%s\n" "$W" "$N" "$G" "$token" "$N"
+  else
+    read -rp "  Iran Server IP: " remote
+    while :; do
+      read -rp "  Paste Token from Iran server (20-64 chars): " token
+      [[ $token =~ ^[A-Za-z0-9]{20,64}$ ]] && break
+      printf "  %sInvalid token length/format.%s\n" "$R" "$N"
+    done
+    ports=""
+  fi
+
+  mkdir -p /etc/venom/tunnels /etc/venom/certs
+  local cfg="/etc/venom/tunnels/${name}.toml"
+  if [ "$role" = "iran" ]; then
+    [ -f "/etc/venom/certs/${name}.crt" ] || {
+      openssl ecparam -name secp384r1 -genkey -noout -out "/etc/venom/certs/${name}.key" 2>/dev/null
+      openssl req -new -x509 -sha384 -key "/etc/venom/certs/${name}.key" -out "/etc/venom/certs/${name}.crt" -days 3650 -subj "/CN=cdn.venom-edge.net" 2>/dev/null
+      chmod 600 "/etc/venom/certs/${name}.key"
+    }
+    {
+      printf '[server]\nbind_addr = "0.0.0.0:%s"\ntransport = "wssmux"\ntoken = "%s"\nkeepalive_period = 75\nnodelay = true\nheartbeat = 40\nchannel_size = 4096\nmux_con = 8\nmux_version = 1\nmux_framesize = 32768\nmux_recievebuffer = 4194304\nmux_streambuffer = 65536\ntls_cert = "/etc/venom/certs/%s.crt"\ntls_key = "/etc/venom/certs/%s.key"\nsniffer = false\nweb_port = 0\nlog_level = "info"\nports = [\n' "$cport" "$token" "$name" "$name"
+      IFS=',' read -ra arr <<< "$ports"
+      for p in "${arr[@]}"; do
+        p=$(echo "$p" | xargs)
+        [ -n "$p" ] && printf '    "%s=%s",\n' "$p" "$p"
+      done
+      printf ']\n'
+    } > "$cfg"
+  else
+    cat > "$cfg" <<EOF
+[client]
+remote_addr = "${remote}:${cport}"
+edge_ip = ""
+transport = "wssmux"
+token = "${token}"
+connection_pool = 8
+aggressive_pool = false
+keepalive_period = 75
+dial_timeout = 10
+nodelay = true
+retry_interval = 3
+mux_version = 1
+mux_framesize = 32768
+mux_recievebuffer = 4194304
+mux_streambuffer = 65536
+sniffer = false
+web_port = 0
+log_level = "info"
+EOF
+  fi
+  chmod 600 "$cfg"
+
+  local bin="/etc/backhaul/backhaul"
+  [ -x "$bin" ] || bin="/usr/local/bin/backhaul"
+  cat > "/etc/systemd/system/venom-${name}.service" <<EOF
+[Unit]
+Description=Venom Tunnel - ${name} (backhaul-wssmux)
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+ExecStart=${bin} -c ${cfg}
+Restart=always
+RestartSec=3
+LimitNOFILE=1048576
+OOMScoreAdjust=-500
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now "venom-${name}.service"
+  systemctl restart venom-panel 2>/dev/null || true
+  printf "\n  %s[OK]%s Tunnel %svenom-%s%s is now %s%s%s!\n" "$G" "$N" "$W" "$name" "$N" "$G" "$(systemctl is-active "venom-${name}")" "$N"
+}
+
+run_diagnostics() {
+  printf "\n  %s>> Venom NetProbe Diagnostics (Rust Engine)%s\n\n" "$C" "$N"
+  if [ -x "$NETPROBE" ]; then
+    printf "  %sTelemetry:%s\n  " "$W" "$N"; "$NETPROBE" telemetry
+    printf "\n  %sInternational Reachability:%s\n  " "$W" "$N"; "$NETPROBE" intl
+    read -rp $'\n  Test TCP packet loss to remote IP (Enter to skip): ' rip
+    if [ -n "$rip" ]; then
+      read -rp "  Remote port [443]: " rpt; rpt=${rpt:-443}
+      "$NETPROBE" tcp "$rip" "$rpt" 10
+    fi
+  else
+    printf "  %svenom-netprobe binary not found; running fallback check...%s\n" "$Y" "$N"
+    curl -4 -sI --max-time 3 https://1.1.1.1 | head -n1 || echo "  International blocked/timeout"
+  fi
+}
+
+uninstall_venom() {
+  printf "\n  %s[!] This will remove Venom Panel & CLI (existing Backhaul tunnels in /etc/backhaul are preserved).%s\n" "$Y" "$N"
+  read -rp "  Type YES to confirm uninstall: " ans
+  [ "$ans" = "YES" ] || { echo "  Cancelled."; return; }
+  systemctl disable --now venom-panel 2>/dev/null || true
+  rm -f /etc/systemd/system/venom-panel.service /usr/local/bin/venom /usr/local/bin/venomd /usr/local/bin/venom-netprobe /usr/local/bin/venom-sysopt
+  rm -rf /opt/venom /etc/venom
+  systemctl daemon-reload
+  printf "  %s[OK]%s Venom Tunnel removed cleanly.\n" "$G" "$N"
+  exit 0
+}
+
+# Handle direct subcommands
+case "${1:-}" in
+  panel)     show_panel_info; exit 0 ;;
+  reset-auth) [ -x "$VENOMD" ] && "$VENOMD" reset-auth && systemctl restart venom-panel; exit 0 ;;
+  pair)      [ -x "$VENOMD" ] && "$VENOMD" pair "${2:-}"; exit $? ;;
+  status)    systemctl list-units --type=service --all 'venom-*' 'backhaul.service' --no-pager; exit 0 ;;
+  optimize)  [ -x "$SYSOPT" ] && "$SYSOPT" apply eth0; exit 0 ;;
+  uninstall) uninstall_venom; exit 0 ;;
+esac
+
+# Main Interactive Menu
+while :; do
+  banner
+  printf "  %s╭───────────────────────────┬───────────────────────────╮%s\n" "$D" "$N"
+  printf "  %s│%s %s[1]%s Launch Backhaul WSSMux %s│%s %s[5]%s Web Panel URL & Auth  %s│%s\n" "$D" "$N" "$G" "$N" "$D" "$N" "$C" "$N" "$D" "$N"
+  printf "  %s│%s %s[2]%s Pair with Code (1-Cmd) %s│%s %s[6]%s Reset Panel Password  %s│%s\n" "$D" "$N" "$G" "$N" "$D" "$N" "$C" "$N" "$D" "$N"
+  printf "  %s│%s %s[3]%s Active Tunnels Status  %s│%s %s[7]%s Kernel Tune (C sysopt)%s│%s\n" "$D" "$N" "$G" "$N" "$D" "$N" "$C" "$N" "$D" "$N"
+  printf "  %s│%s %s[4]%s NetProbe Diagnostics   %s│%s %s[8]%s Restart Web Panel     %s│%s\n" "$D" "$N" "$G" "$N" "$D" "$N" "$C" "$N" "$D" "$N"
+  printf "  %s│%s %s[9]%s Uninstall Venom        %s│%s %s[0]%s Exit                  %s│%s\n" "$D" "$N" "$R" "$N" "$D" "$N" "$D" "$N" "$D" "$N"
+  printf "  %s╰───────────────────────────┴───────────────────────────╯%s\n\n" "$D" "$N"
+  read -rp "  Select [0-9]: " ch
+  case "$ch" in
+    1) quick_create_backhaul; pause ;;
+    2) read -rp "  Paste VENOM:// pairing code: " pcode; "$VENOMD" pair "$pcode"; pause ;;
+    3) systemctl list-units --type=service --all 'venom-*' 'backhaul.service' --no-pager; pause ;;
+    4) run_diagnostics; pause ;;
+    5) show_panel_info; pause ;;
+    6) "$VENOMD" reset-auth && systemctl restart venom-panel; pause ;;
+    7) "$SYSOPT" apply eth0; pause ;;
+    8) systemctl restart venom-panel && echo "  Panel restarted."; pause ;;
+    9) uninstall_venom ;;
+    0) printf "\n  %sVenom out.%s\n\n" "$G" "$N"; exit 0 ;;
+  esac
+done

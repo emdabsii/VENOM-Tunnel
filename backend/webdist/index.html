@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="toxic">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VENOM TUNNEL v2.0 — Graphical Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root, [data-theme="toxic"] {
+  --bg: #040709;
+  --bg2: #091015;
+  --card: rgba(12, 20, 26, 0.86);
+  --border: rgba(34, 255, 102, 0.18);
+  --border-hi: rgba(34, 255, 102, 0.45);
+  --accent: #22ff66;
+  --accent2: #00e5ff;
+  --glow: rgba(34, 255, 102, 0.28);
+  --text: #eef7f1;
+  --muted: #7c9689;
+  --danger: #ff3b5c;
+  --warn: #fbbf24;
+  --grid: rgba(34, 255, 102, 0.045);
+}
+[data-theme="carnage"] {
+  --bg: #080406;
+  --bg2: #14080d;
+  --card: rgba(24, 10, 16, 0.88);
+  --border: rgba(255, 42, 85, 0.22);
+  --border-hi: rgba(255, 42, 85, 0.55);
+  --accent: #ff2a55;
+  --accent2: #ff9900;
+  --glow: rgba(255, 42, 85, 0.30);
+  --text: #fff0f3;
+  --muted: #a87b86;
+  --danger: #ff5252;
+  --warn: #f59e0b;
+  --grid: rgba(255, 42, 85, 0.045);
+}
+[data-theme="cyber"] {
+  --bg: #040814;
+  --bg2: #0a1226;
+  --card: rgba(13, 22, 46, 0.88);
+  --border: rgba(56, 189, 248, 0.22);
+  --border-hi: rgba(56, 189, 248, 0.55);
+  --accent: #38bdf8;
+  --accent2: #a855f7;
+  --glow: rgba(56, 189, 248, 0.30);
+  --text: #edf6ff;
+  --muted: #7e95bb;
+  --danger: #f43f5e;
+  --warn: #facc15;
+  --grid: rgba(56, 189, 248, 0.045);
+}
+[data-theme="light"] {
+  --bg: #eef3f8;
+  --bg2: #ffffff;
+  --card: rgba(255, 255, 255, 0.94);
+  --border: rgba(15, 23, 42, 0.10);
+  --border-hi: rgba(5, 150, 105, 0.42);
+  --accent: #059669;
+  --accent2: #0284c7;
+  --glow: rgba(5, 150, 105, 0.16);
+  --text: #0f172a;
+  --muted: #64748b;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --grid: rgba(15, 23, 42, 0.035);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 18% 12%, var(--glow), transparent 36%),
+    radial-gradient(circle at 86% 84%, rgba(0,229,255,0.12), transparent 34%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+html[lang="fa"] body { font-family: 'Vazirmatn', 'DejaVu Sans', Tahoma, sans-serif; }
+html[lang="en"] body, html[lang="ru"] body { font-family: 'Plus Jakarta Sans', 'DejaVu Sans', system-ui, sans-serif; }
+html[lang="zh"] body { font-family: 'Noto Sans SC', 'DejaVu Sans', sans-serif; }
+.mono { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', monospace !important; direction: ltr; unicode-bidi: isolate; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.card:hover { border-color: var(--border-hi); }
+.glow { box-shadow: 0 0 36px var(--glow), inset 0 1px 0 rgba(255,255,255,0.06); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04); color: var(--text); font-weight: 700;
+  font-size: 13px; cursor: pointer; transition: all .18s; font-family: inherit;
+}
+.btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.09); }
+.btn-primary { background: var(--accent); color: #041008; border-color: transparent; box-shadow: 0 0 22px var(--glow); }
+.btn-primary:hover { filter: brightness(1.08); background: var(--accent); color: #041008; }
+.btn-danger { color: var(--danger); border-color: rgba(255,59,92,0.3); }
+.btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 10px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+  border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .3px;
+}
+.badge-ok { background: rgba(34,255,102,0.14); color: var(--accent); border: 1px solid rgba(34,255,102,0.35); }
+.badge-info { background: rgba(0,229,255,0.13); color: var(--accent2); border: 1px solid rgba(0,229,255,0.32); }
+.badge-warn { background: rgba(251,191,36,0.15); color: var(--warn); border: 1px solid rgba(251,191,36,0.35); }
+.badge-err { background: rgba(255,59,92,0.15); color: var(--danger); border: 1px solid rgba(255,59,92,0.35); }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); display: inline-block; }
+.dot-err { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+
+.input {
+  width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: rgba(0,0,0,0.28); color: var(--text); font-size: 13px; outline: none; font-family: inherit;
+}
+[data-theme="light"] .input { background: rgba(15,23,42,0.04); }
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+
+/* Layout */
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 256px; padding: 22px 16px; background: var(--bg2);
+  border-inline-end: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 14px; border: 1px solid transparent; background: transparent;
+  color: var(--muted); font-weight: 700; font-size: 13.5px; cursor: pointer;
+  transition: all .18s; width: 100%; text-align: start; font-family: inherit;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-item.active {
+  color: #041008; background: var(--accent);
+  box-shadow: 0 0 24px var(--glow);
+}
+.main { flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+
+/* Animations */
+@keyframes flow { from { stroke-dashoffset: 48; } to { stroke-dashoffset: 0; } }
+@keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .72; } }
+@keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.packet-line { stroke-dasharray: 8 8; animation: flow 1.1s linear infinite; }
+.venom-pulse { animation: pulse 2.2s ease-in-out infinite; }
+.spin-slow { animation: spinSlow 9s linear infinite; transform-origin: center; }
+
+/* Splash & Login */
+.center-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.login-box { width: 100%; max-width: 440px; padding: 34px; position: relative; overflow: hidden; }
+.log-box {
+  background: #030608; border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px; font-size: 12px; line-height: 1.75; overflow: auto; max-height: 410px;
+  color: #b7f7c9;
+}
+.log-info { color: #22ff66; }
+.log-warn { color: #fbbf24; }
+.log-err  { color: #ff3b5c; }
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  padding: 5px 10px; border-radius: 9px; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--muted); cursor: pointer;
+}
+.pill.active { background: var(--accent); color: #041008; border-color: transparent; }
+
+.theme-swatch {
+  width: 24px; height: 24px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: .18s;
+}
+.theme-swatch.active { border-color: #fff; transform: scale(1.12); }
+
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+}
+.modal-card { width: 100%; max-width: 560px; padding: 26px; max-height: 90vh; overflow-y: auto; }
+
+@media (max-width: 1050px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .sidebar { width: 210px; }
+}
+@media (max-width: 760px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { width: 100%; border-inline-end: none; border-bottom: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const I18N = {
+  fa: {
+    brand: 'VENOM TUNNEL', sub: 'ماتریس گرافیکی تانل‌های چندموتوره',
+    loginTitle: 'ورود به ماتریس امن ونوم', user: 'نام کاربری', pass: 'رمز عبور',
+    connectBtn: 'اتصال به ماتریس ونوم', connecting: 'در حال رمزگشایی و برقراری پیوند امن ونوم...',
+    stage1: 'احراز هویت JWT + SHA-256', stage2: 'اسکن تانل‌های فعال و Backhaul WSSMux', stage3: 'اتصال به موتور Rust NetProbe',
+    navDash: 'داشبورد گرافیکی', navTun: 'مدیریت تانل‌ها', navDiag: 'عیب‌یابی و لاگ', navPair: 'جفت‌سازی و تم‌ها', navSet: 'تنظیمات پنل',
+    topoTitle: 'نقشه زنده توپولوژی شبکه', iranNode: 'سرور ایران (ورودی)', foreignNode: 'سرور خارج (خروجی)',
+    cpu: 'پردازنده CPU', ram: 'حافظه RAM', net: 'ترافیک زنده', intl: 'دسترسی بین‌الملل',
+    intlOpen: 'باز و پایدار', intlBlocked: 'ملی / مسدود',
+    newTunnel: 'ساخت تانل جدید', autoImp: 'شناسایی خودکار', active: 'فعال', stopped: 'متوقف',
+    portsLabel: 'پورت فعال', edit: 'ویرایش', pair: 'جفت‌سازی', logs: 'لاگ زنده', restart: 'ری‌استارت',
+    probeTitle: 'تست پکت‌لاس TCP (موتور Rust)', intlMatrix: 'ماتریس دسترسی بین‌الملل',
+    optKernel: 'تیونینگ کرنل (C sysopt)', optDesc: 'فعال‌سازی BBR + FQ + RPS چندهسته‌ای',
+    pairTitle: 'جفت‌سازی یک‌کلیکه بین سرورها', pairHint: 'این دستور را روی سرور مقابل بزن تا در ۳ ثانیه تانل ست شود',
+    themesTitle: 'انتخاب تم گرافیکی ونوم', langTitle: 'زبان رابط کاربری (۴ زبان)',
+    save: 'ذخیره تغییرات', backup: 'دانلود بکاپ JSON', copy: 'کپی', copied: 'کپی شد!'
+  },
+  en: {
+    brand: 'VENOM TUNNEL', sub: 'Polyglot Graphical Tunnel Matrix',
+    loginTitle: 'Authenticate to Venom Matrix', user: 'Username', pass: 'Password',
+    connectBtn: 'Establish Venom Link', connecting: 'SYNCHRONIZING ENCRYPTED VENOM MATRIX...',
+    stage1: 'JWT + SHA-256 Handshake', stage2: 'Auto-Discovering Backhaul WSSMux', stage3: 'Attaching Rust NetProbe Engine',
+    navDash: 'Live Matrix', navTun: 'Tunnels', navDiag: 'NetProbe & Logs', navPair: 'Pairing & Themes', navSet: 'Panel Settings',
+    topoTitle: 'Live Visual Tunnel Topology', iranNode: 'Iran Entry Node', foreignNode: 'Foreign Exit Node',
+    cpu: 'CPU Load', ram: 'Memory Usage', net: 'Live Throughput', intl: 'International',
+    intlOpen: 'OPEN & CLEAN', intlBlocked: 'RESTRICTED',
+    newTunnel: 'New Tunnel', autoImp: 'Auto-Imported', active: 'ACTIVE', stopped: 'STOPPED',
+    portsLabel: 'Active Ports', edit: 'Edit', pair: 'Pair', logs: 'Live Logs', restart: 'Restart',
+    probeTitle: 'Rust TCP Packet-Loss Prober', intlMatrix: 'International Reachability',
+    optKernel: 'Kernel Boost (C sysopt)', optDesc: 'Apply BBR + FQ + Multi-Core RPS',
+    pairTitle: '1-Click Server Pairing', pairHint: 'Run this command on the peer server to link in 3 seconds',
+    themesTitle: 'Venom Visual Themes', langTitle: 'Interface Language (4 Languages)',
+    save: 'Save & Apply', backup: 'Export JSON', copy: 'Copy', copied: 'Copied!'
+  },
+  zh: {
+    brand: 'VENOM TUNNEL', sub: '多引擎图形化隧道控制矩阵',
+    loginTitle: '登录 Venom 加密矩阵', user: '用户名', pass: '密码',
+    connectBtn: '建立安全连接', connecting: '正在同步加密隧道矩阵...',
+    stage1: 'JWT + SHA-256 握手认证', stage2: '自动导入 Backhaul WSSMux', stage3: '连接 Rust 网络探测引擎',
+    navDash: '实时矩阵', navTun: '隧道管理', navDiag: '探测与日志', navPair: '配对与主题', navSet: '面板设置',
+    topoTitle: '实时节点拓扑视图', iranNode: '入口节点 (Iran)', foreignNode: '出口节点 (Foreign)',
+    cpu: 'CPU 负载', ram: '内存使用', net: '实时吞吐', intl: '国际出口',
+    intlOpen: '畅通无阻', intlBlocked: '受限',
+    newTunnel: '新建隧道', autoImp: '自动导入', active: '运行中', stopped: '已停止',
+    portsLabel: '转发端口', edit: '编辑', pair: '配对', logs: '实时日志', restart: '重启',
+    probeTitle: 'Rust TCP 丢包探测', intlMatrix: '国际连通性矩阵',
+    optKernel: '内核调优 (C sysopt)', optDesc: '启用 BBR + FQ + 多核 RPS',
+    pairTitle: '一键跨服配对', pairHint: '在对端服务器运行此命令即可3秒完成对接',
+    themesTitle: 'Venom 视觉主题', langTitle: '界面语言 (4种语言)',
+    save: '保存应用', backup: '导出 JSON', copy: '复制', copied: '已复制'
+  },
+  ru: {
+    brand: 'VENOM TUNNEL', sub: 'Графическая матрица туннелей',
+    loginTitle: 'Вход в матрицу Venom', user: 'Логин', pass: 'Пароль',
+    connectBtn: 'Установить связь', connecting: 'СИНХРОНИЗАЦИЯ ЗАШИФРОВАННОГО КАНАЛА...',
+    stage1: 'Проверка JWT + SHA-256', stage2: 'Импорт Backhaul WSSMux', stage3: 'Подключение Rust NetProbe',
+    navDash: 'Матрица', navTun: 'Туннели', navDiag: 'Диагностика', navPair: 'Связка и темы', navSet: 'Настройки',
+    topoTitle: 'Топология туннеля в реальном времени', iranNode: 'Узел входа (Iran)', foreignNode: 'Выходной узел',
+    cpu: 'Процессор', ram: 'Память RAM', net: 'Трафик', intl: 'Внешняя сеть',
+    intlOpen: 'ОТКРЫТА', intlBlocked: 'БЛОК',
+    newTunnel: 'Новый туннель', autoImp: 'Авто-импорт', active: 'АКТИВЕН', stopped: 'СТОП',
+    portsLabel: 'портов', edit: 'Изменить', pair: 'Связать', logs: 'Логи', restart: 'Рестарт',
+    probeTitle: 'Rust TCP Тест потерь', intlMatrix: 'Доступность внешней сети',
+    optKernel: 'Тюнинг ядра (C sysopt)', optDesc: 'BBR + FQ + многоядерный RPS',
+    pairTitle: 'Связка серверов в 1 клик', pairHint: 'Выполните команду на втором сервере для мгновенной связки',
+    themesTitle: 'Графические темы Venom', langTitle: 'Язык интерфейса (4 языка)',
+    save: 'Сохранить', backup: 'Экспорт JSON', copy: 'Копировать', copied: 'Скопировано!'
+  }
+};
+
+const qs = new URLSearchParams(location.search);
+const isDemo = qs.get('demo') === '1';
+
+const state = {
+  lang: qs.get('lang') || 'fa',
+  theme: qs.get('theme') || 'toxic',
+  screen: qs.get('view') === 'login' ? 'login' : (qs.get('view') === 'splash' ? 'splash' : (isDemo ? 'app' : 'login')),
+  view: ['dashboard','tunnels','diag','pair','settings'].includes(qs.get('view')) ? qs.get('view') : 'dashboard',
+  serverIP: '46.38.142.250',
+  panelPort: 48291,
+  secretPath: 'vnm9x4k2q8',
+  username: 'venom_admin',
+  telemetry: { cpu_pct: 12.4, ram_pct: 24.8, ram_used_mb: 496, ram_total_mb: 2048, rx_mbps: 84.6, tx_mbps: 79.2, rx_total_gb: 142.8, tx_total_gb: 138.4 },
+  intl: {
+    international_open: true,
+    checks: [
+      { name: 'Cloudflare', endpoint: '1.1.1.1:443', open: true, rtt_ms: 38.4 },
+      { name: 'Google', endpoint: '8.8.8.8:443', open: true, rtt_ms: 41.2 },
+      { name: 'GitHub', endpoint: '140.82.121.3:443', open: true, rtt_ms: 44.9 }
+    ]
+  },
+  probeResult: { host: '107.181.155.14', port: 443, sent: 20, received: 20, loss_pct: 0.0, min_ms: 39.1, avg_ms: 41.3, max_ms: 44.8 },
+  tunnels: [
+    {
+      id: 'bh-main', name: 'backhaul-main', engine: 'backhaul-wssmux', role: 'iran',
+      local_ip: '46.38.142.250', remote_ip: '107.181.155.14', control_port: 443,
+      ports: '8074,8084,8134,8085,8086,8087,8088,8089,8090,8091,8092,8093,8094,8095,8096,8097,8098,8099,8100,8101,8102,8103,8104,8105,8106,8107,8108,8109,8110,8135,8112,8113,8114,8115,8116,8117,8118,8119,8120,8121,8122,8123,8124,8125,8126,8127,8128,8129,8130,8131,8132,8133,9090,8444,900,8685',
+      token: 'Xk9mP4vQ2nR8wL5zT7bC1fH6jD3yG0sV9qN4eA2u',
+      imported: true, state: 'active', rtt_ms: 41.3
+    },
+    {
+      id: 'vnm-de2', name: 'frankfurt-reality', engine: 'xray-reality', role: 'iran',
+      local_ip: '46.38.142.250', remote_ip: '185.211.44.19', control_port: 8443,
+      ports: '2083,2087,2096', token: 'vless-reality-vision-ecdsa-p384-active',
+      imported: false, state: 'active', rtt_ms: 52.6
+    },
+    {
+      id: 'vnm-tr1', name: 'istanbul-mux', engine: 'backhaul-tcpmux', role: 'iran',
+      local_ip: '46.38.142.250', remote_ip: '91.151.90.42', control_port: 2053,
+      ports: '443,8080,8880', token: 'R7pQ2mK9vL4xN8wT3cB6jF1hD5zS0yG4uA9eW2qX',
+      imported: false, state: 'inactive', rtt_ms: 0
+    }
+  ],
+  logs: `Nov 24 18:40:12 venom-ir backhaul[4978]: [INFO] Applying TCP optimizations for Linux (BBR + FQ)
+Nov 24 18:40:12 venom-ir backhaul[4978]: [INFO] Successfully set rmem_max to 268435456
+Nov 24 18:40:12 venom-ir backhaul[4978]: [INFO] wssmux server starting, listening on 0.0.0.0:443
+Nov 24 18:40:13 venom-ir backhaul[4978]: [INFO] TLS 1.3 ECDSA P-384 handshake verified (107.181.155.14)
+Nov 24 18:40:13 venom-ir backhaul[4978]: [INFO] wssmux control channel established (mux_con=8, pool=8)
+Nov 24 18:40:13 venom-ir backhaul[4978]: [INFO] 56 listeners active (8074..8685, 900, 8444, 9090)
+Nov 24 18:40:14 venom-ir backhaul[4978]: [INFO] Round Trip Time (RTT): 41 ms | Packet Loss: 0.0%
+Nov 24 18:41:02 venom-ir venom-netprobe[5102]: [INFO] International matrix: Cloudflare 38ms, Google 41ms -> OPEN`,
+  modal: null,
+  editTarget: null,
+  pairCode: 'VENOM://eyJuIjoiYmFja2hhdWwtbWFpbiIsImUiOiJiYWNraGF1bC13c3NtdXgiLCJyIjoiZm9yZWlnbiIsInJpcCI6IjQ2LjM4LjE0Mi4yNTAiLCJjcCI6NDQzLCJ0IjoiWGs5bVA0dlEyblI4d0w1elQ3YkMxZkg2akQzeUcwcyJ9',
+  copied: false
+};
+
+function venomLogoSVG(size = 44) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none">
+    <defs>
+      <linearGradient id="vg" x1="0" y1="0" x2="64" y2="64">
+        <stop offset="0%" stop-color="var(--accent)"/>
+        <stop offset="100%" stop-color="var(--accent2)"/>
+      </linearGradient>
+    </defs>
+    <polygon points="32,3 58,18 58,46 32,61 6,46 6,18" stroke="url(#vg)" stroke-width="2.6" fill="rgba(0,0,0,0.45)"/>
+    <path d="M18 20 L32 48 L46 20 L38 20 L32 34 L26 20 Z" fill="url(#vg)"/>
+    <path d="M23 15 L32 23 L41 15" stroke="var(--accent2)" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function ringGauge(pct, color = 'var(--accent)') {
+  const r = 24, c = 2 * Math.PI * r, off = c * (1 - Math.min(100, Math.max(0, pct)) / 100);
+  return `<svg width="62" height="62" viewBox="0 0 62 62">
+    <circle cx="31" cy="31" r="${r}" stroke="rgba(255,255,255,0.09)" stroke-width="5.5" fill="none"/>
+    <circle cx="31" cy="31" r="${r}" stroke="${color}" stroke-width="5.5" fill="none"
+      stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"
+      stroke-linecap="round" transform="rotate(-90 31 31)"/>
+    <text x="31" y="35" text-anchor="middle" fill="var(--text)" font-size="12" font-weight="700" class="mono">${Math.round(pct)}%</text>
+  </svg>`;
+}
+
+function setLang(l) { state.lang = l; applyDoc(); render(); }
+function setTheme(th) { state.theme = th; applyDoc(); render(); }
+function applyDoc() {
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = state.lang === 'fa' ? 'rtl' : 'ltr';
+  document.documentElement.setAttribute('data-theme', state.theme);
+}
+
+async function fetchLive() {
+  if (isDemo) return;
+  try {
+    const [tRes, telRes, intlRes] = await Promise.all([
+      fetch('/api/tunnels').then(r => r.ok ? r.json() : null),
+      fetch('/api/system/telemetry').then(r => r.ok ? r.json() : null),
+      fetch('/api/system/intl').then(r => r.ok ? r.json() : null)
+    ]);
+    if (tRes && tRes.tunnels) { state.tunnels = tRes.tunnels; state.serverIP = tRes.server_ip || state.serverIP; }
+    if (telRes && telRes.cpu_pct !== undefined) state.telemetry = telRes;
+    if (intlRes && intlRes.checks) state.intl = intlRes;
+    render();
+  } catch (e) {}
+}
+
+async function doLogin(ev) {
+  ev.preventDefault();
+  const u = document.getElementById('login-user').value;
+  const p = document.getElementById('login-pass').value;
+  state.screen = 'splash';
+  render();
+  if (!isDemo) {
+    try {
+      const r = await fetch('/api/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      if (!r.ok) {
+        setTimeout(() => { state.screen = 'login'; alert('Invalid credentials'); render(); }, 900);
+        return;
+      }
+    } catch (e) {}
+  }
+  setTimeout(() => { state.screen = 'app'; fetchLive(); render(); }, 2100);
+}
+
+function copyText(txt) {
+  navigator.clipboard?.writeText(txt).catch(() => {});
+  state.copied = true; render();
+  setTimeout(() => { state.copied = false; render(); }, 1800);
+}
+
+function renderTopology(t) {
+  const main = state.tunnels[0] || { local_ip: state.serverIP, remote_ip: '107.181.155.14', control_port: 443, engine: 'backhaul-wssmux', rtt_ms: 41.3 };
+  return `<div class="card glow" style="padding:22px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="dot"></span>
+        <strong style="font-size:15px">${t.topoTitle}</strong>
+      </div>
+      <div class="pill-row">
+        <span class="badge badge-ok mono">TLS 1.3 · WSSMux</span>
+        <span class="badge badge-info mono">RTT ${main.rtt_ms || 41} ms · 0% LOSS</span>
+      </div>
+    </div>
+    <svg viewBox="0 0 920 185" width="100%" style="display:block;max-height:195px">
+      <defs>
+        <linearGradient id="pipe" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--accent)"/>
+          <stop offset="50%" stop-color="var(--accent2)"/>
+          <stop offset="100%" stop-color="var(--accent)"/>
+        </linearGradient>
+      </defs>
+      <!-- Curved encrypted fiber links -->
+      <path d="M 210 72 C 360 18, 560 18, 710 72" stroke="url(#pipe)" stroke-width="3" fill="none" opacity="0.35"/>
+      <path d="M 210 72 C 360 18, 560 18, 710 72" stroke="var(--accent)" stroke-width="3" fill="none" class="packet-line"/>
+      <path d="M 710 112 C 560 164, 360 164, 210 112" stroke="url(#pipe)" stroke-width="2.5" fill="none" opacity="0.28"/>
+      <path d="M 710 112 C 560 164, 360 164, 210 112" stroke="var(--accent2)" stroke-width="2.5" fill="none" class="packet-line"/>
+
+      <!-- Center Venom Core Shield -->
+      <g transform="translate(460,92)">
+        <circle r="34" fill="rgba(0,0,0,0.55)" stroke="var(--accent)" stroke-width="2" class="venom-pulse"/>
+        <circle r="44" fill="none" stroke="var(--accent2)" stroke-width="1" stroke-dasharray="5 6" class="spin-slow"/>
+        <text y="-3" text-anchor="middle" fill="var(--accent)" font-size="11" font-weight="800" class="mono">WSSMUX</text>
+        <text y="13" text-anchor="middle" fill="var(--text)" font-size="10" class="mono">:443 · x8</text>
+      </g>
+
+      <!-- Iran Node -->
+      <g transform="translate(24,36)">
+        <rect width="190" height="110" rx="18" fill="rgba(0,0,0,0.48)" stroke="var(--accent)" stroke-width="1.6"/>
+        <circle cx="24" cy="26" r="5" fill="var(--accent)"/>
+        <text x="38" y="30" fill="var(--text)" font-size="12" font-weight="700">${t.iranNode}</text>
+        <text x="20" y="60" fill="var(--accent)" font-size="14" font-weight="700" class="mono">${main.local_ip}</text>
+        <text x="20" y="84" fill="var(--muted)" font-size="11" class="mono">56 Ports · BBR+FQ</text>
+      </g>
+
+      <!-- Foreign Node -->
+      <g transform="translate(706,36)">
+        <rect width="190" height="110" rx="18" fill="rgba(0,0,0,0.48)" stroke="var(--accent2)" stroke-width="1.6"/>
+        <circle cx="24" cy="26" r="5" fill="var(--accent2)"/>
+        <text x="38" y="30" fill="var(--text)" font-size="12" font-weight="700">${t.foreignNode}</text>
+        <text x="20" y="60" fill="var(--accent2)" font-size="14" font-weight="700" class="mono">${main.remote_ip}</text>
+        <text x="20" y="84" fill="var(--muted)" font-size="11" class="mono">Client Pool: 8</text>
+      </g>
+    </svg>
+  </div>`;
+}
+
+function renderDashboard(t) {
+  const tel = state.telemetry;
+  return `
+    ${renderTopology(t)}
+    <div class="kpi-grid">
+      <div class="card" style="padding:18px;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:12px;color:var(--muted)">${t.cpu}</div><div class="mono" style="font-size:22px;font-weight:800;margin-top:4px">${tel.cpu_pct}%</div><div class="mono" style="font-size:11px;color:var(--muted)">4 Cores · AES-NI</div></div>
+        ${ringGauge(tel.cpu_pct, 'var(--accent)')}
+      </div>
+      <div class="card" style="padding:18px;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:12px;color:var(--muted)">${t.ram}</div><div class="mono" style="font-size:22px;font-weight:800;margin-top:4px">${tel.ram_pct}%</div><div class="mono" style="font-size:11px;color:var(--muted)">${tel.ram_used_mb} / ${tel.ram_total_mb} MB</div></div>
+        ${ringGauge(tel.ram_pct, 'var(--accent2)')}
+      </div>
+      <div class="card" style="padding:18px">
+        <div style="font-size:12px;color:var(--muted)">${t.net}</div>
+        <div class="mono" style="font-size:20px;font-weight:800;margin-top:4px;color:var(--accent)">↓ ${tel.rx_mbps} <span style="font-size:12px;color:var(--muted)">Mbps</span></div>
+        <div class="mono" style="font-size:12px;color:var(--accent2);margin-top:2px">↑ ${tel.tx_mbps} Mbps · ${tel.rx_total_gb} GB</div>
+      </div>
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font-size:12px;color:var(--muted)">${t.intl}</div>
+        <div style="margin-top:6px"><span class="badge ${state.intl.international_open ? 'badge-ok' : 'badge-err'}" style="font-size:13px;padding:6px 12px">
+          <span class="dot ${state.intl.international_open ? '' : 'dot-err'}"></span>
+          ${state.intl.international_open ? t.intlOpen : t.intlBlocked}
+        </span></div>
+        <div class="mono" style="font-size:11px;color:var(--muted);margin-top:6px">Rust NetProbe · Live</div>
+      </div>
+    </div>
+    ${renderTunnelsGrid(t, true)}
+  `;
+}
+
+function renderTunnelsGrid(t, compact = false) {
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="font-size:16px;font-weight:800">${t.navTun} <span class="badge badge-info mono">${state.tunnels.length}</span></div>
+      <button class="btn btn-primary" onclick="openCreateModal()">+ ${t.newTunnel}</button>
+    </div>
+    <div class="grid-3">
+      ${state.tunnels.map(item => {
+        const pCount = item.ports ? item.ports.split(',').filter(Boolean).length : 0;
+        const ok = item.state === 'active';
+        return `<div class="card ${ok ? 'glow' : ''}" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="dot ${ok ? '' : 'dot-err'}"></span>
+              <strong class="mono" style="font-size:15px">${item.name}</strong>
+            </div>
+            <span class="badge ${ok ? 'badge-ok' : 'badge-err'}">${ok ? t.active : t.stopped}</span>
+          </div>
+          <div class="pill-row">
+            <span class="badge badge-info mono">${item.engine}</span>
+            <span class="badge badge-warn mono">${item.role.toUpperCase()} :${item.control_port}</span>
+            ${item.imported ? `<span class="badge badge-ok">${t.autoImp}</span>` : ''}
+          </div>
+          <div class="mono" style="font-size:12px;color:var(--muted);background:rgba(0,0,0,0.28);padding:10px 12px;border-radius:12px;border:1px solid var(--border)">
+            ${item.local_ip} ⇄ ${item.remote_ip || '0.0.0.0'}<br/>
+            <span style="color:var(--accent)">${pCount} ${t.portsLabel}</span> · RTT ${item.rtt_ms || 0} ms
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="openEditModal('${item.name}')">${t.edit}</button>
+            <button class="btn btn-sm" onclick="state.view='pair';render()">${t.pair}</button>
+            <button class="btn btn-sm" onclick="state.view='diag';render()">${t.logs}</button>
+            <button class="btn btn-sm" onclick="restartTunnel('${item.name}')">${t.restart}</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderDiag(t) {
+  const pr = state.probeResult;
+  const formattedLogs = state.logs.split('\n').map(l => {
+    const cls = l.includes('[ERROR]') ? 'log-err' : (l.includes('[WARN]') ? 'log-warn' : 'log-info');
+    return `<div class="${cls}">${l.replace(/</g,'&lt;')}</div>`;
+  }).join('');
+  return `
+    <div class="grid-2">
+      <div class="card glow" style="padding:22px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>${t.probeTitle}</strong>
+          <span class="badge badge-ok mono">Loss: ${pr.loss_pct}%</span>
+        </div>
+        <div style="display:flex;gap:10px">
+          <input id="probe-host" class="input mono" value="${pr.host}" />
+          <input id="probe-port" class="input mono" style="max-width:95px" value="${pr.port}" />
+          <button class="btn btn-primary" onclick="runProbe()">RUN</button>
+        </div>
+        <div class="grid-3">
+          <div class="card" style="padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted)">MIN</div><div class="mono" style="font-size:18px;font-weight:800;color:var(--accent)">${pr.min_ms}ms</div></div>
+          <div class="card" style="padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted)">AVG</div><div class="mono" style="font-size:18px;font-weight:800;color:var(--accent2)">${pr.avg_ms}ms</div></div>
+          <div class="card" style="padding:12px;text-align:center"><div style="font-size:11px;color:var(--muted)">PACKETS</div><div class="mono" style="font-size:18px;font-weight:800">${pr.received}/${pr.sent}</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:22px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <strong>${t.intlMatrix}</strong>
+          <button class="btn btn-sm btn-primary" onclick="runOptimize()">${t.optKernel}</button>
+        </div>
+        ${state.intl.checks.map(c => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,0.24);border:1px solid var(--border)">
+            <div class="mono" style="font-size:13px"><strong>${c.name}</strong> <span style="color:var(--muted)">${c.endpoint}</span></div>
+            <span class="badge ${c.open ? 'badge-ok' : 'badge-err'} mono">${c.open ? c.rtt_ms + ' ms' : 'BLOCKED'}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <strong>${t.logs} — <span class="mono" style="color:var(--accent)">backhaul-main</span></strong>
+        <span class="badge badge-ok mono">LIVE STREAM</span>
+      </div>
+      <div class="log-box mono">${formattedLogs}</div>
+    </div>
+  `;
+}
+
+function renderPairAndThemes(t) {
+  const cmd = `venom pair '${state.pairCode}'`;
+  return `
+    <div class="grid-2">
+      <div class="card glow" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+        <strong style="font-size:16px">${t.pairTitle}</strong>
+        <div style="font-size:12.5px;color:var(--muted)">${t.pairHint}</div>
+        <div class="mono" style="padding:14px;border-radius:14px;background:rgba(0,0,0,0.4);border:1px solid var(--border-hi);word-break:break-all;font-size:12px;color:var(--accent)">${cmd}</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="copyText(\`${cmd}\`)">${state.copied ? t.copied : t.copy}</button>
+          <span class="badge badge-info mono">Backhaul WSSMux v0.7.2</span>
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+        <div>
+          <strong style="font-size:15px">${t.themesTitle}</strong>
+          <div class="grid-2" style="margin-top:12px;gap:10px">
+            ${[
+              ['toxic','Venom Toxic','#22ff66','#040709'],
+              ['carnage','Venom Carnage','#ff2a55','#080406'],
+              ['cyber','Venom Cyber','#38bdf8','#040814'],
+              ['light','Venom Light','#059669','#eef3f8']
+            ].map(([id, label, c1, c2]) => `
+              <button class="card" onclick="setTheme('${id}')" style="padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;border-color:${state.theme===id?'var(--accent)':'var(--border)'};text-align:start">
+                <span style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,${c1},${c2});border:1px solid rgba(255,255,255,0.2)"></span>
+                <strong style="font-size:13px;color:var(--text)">${label}</strong>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <div>
+          <strong style="font-size:15px">${t.langTitle}</strong>
+          <div class="pill-row" style="margin-top:10px">
+            ${[['fa','فارسی (RTL)'],['en','English (LTR)'],['zh','中文 (ZH)'],['ru','Русский (RU)']].map(([l,lb]) =>
+              `<button class="pill ${state.lang===l?'active':''}" onclick="setLang('${l}')">${lb}</button>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSettings(t) {
+  return `
+    <div class="card glow" style="padding:26px;max-width:720px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <strong style="font-size:16px">${t.navSet}</strong>
+        <a class="btn btn-sm" href="/api/tunnels/export" download="venom-backup.json">${t.backup}</a>
+      </div>
+      <div class="grid-2">
+        <div><label style="font-size:12px;color:var(--muted)">5-Digit Panel Port</label><input class="input mono" value="${state.panelPort}" /></div>
+        <div><label style="font-size:12px;color:var(--muted)">Secret Path</label><input class="input mono" value="/${state.secretPath}/" /></div>
+        <div><label style="font-size:12px;color:var(--muted)">Admin Username</label><input class="input mono" value="${state.username}" /></div>
+        <div><label style="font-size:12px;color:var(--muted)">SSL Domain (Optional)</label><input class="input mono" placeholder="panel.yourdomain.com" /></div>
+        <div><label style="font-size:12px;color:var(--muted)">Telegram Bot Token (Alerts)</label><input class="input mono" placeholder="123456:ABC-DEF..." /></div>
+        <div><label style="font-size:12px;color:var(--muted)">Telegram Chat ID</label><input class="input mono" placeholder="-100..." /></div>
+      </div>
+      <div><button class="btn btn-primary">${t.save}</button></div>
+    </div>
+  `;
+}
+
+function renderModal(t) {
+  if (!state.modal) return '';
+  const item = state.editTarget || { name: '', engine: 'backhaul-wssmux', role: 'iran', remote_ip: '', control_port: 443, ports: '443,8084,8444', token: '' };
+  return `<div class="modal-bg" onclick="if(event.target===this){state.modal=null;render()}">
+    <div class="card glow modal-card" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <strong style="font-size:16px">${state.editTarget ? t.edit + ': ' + item.name : t.newTunnel}</strong>
+        <button class="btn btn-sm" onclick="state.modal=null;render()">✕</button>
+      </div>
+      <div class="grid-2">
+        <div><label style="font-size:11px;color:var(--muted)">Name</label><input id="m-name" class="input mono" value="${item.name}" /></div>
+        <div><label style="font-size:11px;color:var(--muted)">Engine</label>
+          <select id="m-engine" class="input mono">
+            <option value="backhaul-wssmux" ${item.engine==='backhaul-wssmux'?'selected':''}>Backhaul WSSMux v0.7.2 ★</option>
+            <option value="backhaul-tcpmux" ${item.engine==='backhaul-tcpmux'?'selected':''}>Backhaul TCPMux</option>
+            <option value="xray-reality" ${item.engine==='xray-reality'?'selected':''}>Xray VLESS + Reality</option>
+            <option value="rathole" ${item.engine==='rathole'?'selected':''}>Rathole TCP</option>
+            <option value="gost-mwss" ${item.engine==='gost-mwss'?'selected':''}>GOST Relay+MWSS</option>
+          </select>
+        </div>
+        <div><label style="font-size:11px;color:var(--muted)">Role</label>
+          <select id="m-role" class="input mono">
+            <option value="iran" ${item.role==='iran'?'selected':''}>Iran (Server)</option>
+            <option value="foreign" ${item.role==='foreign'?'selected':''}>Foreign (Client)</option>
+          </select>
+        </div>
+        <div><label style="font-size:11px;color:var(--muted)">Control Port</label><input id="m-cport" class="input mono" value="${item.control_port}" /></div>
+      </div>
+      <div><label style="font-size:11px;color:var(--muted)">Remote Server IP</label><input id="m-remote" class="input mono" value="${item.remote_ip}" placeholder="107.181.155.14" /></div>
+      <div><label style="font-size:11px;color:var(--muted)">Ports (comma-separated)</label><textarea id="m-ports" rows="3" class="input mono">${item.ports}</textarea></div>
+      <div><label style="font-size:11px;color:var(--muted)">Token (20–64 alphanumeric chars)</label><input id="m-token" class="input mono" value="${item.token}" placeholder="Auto-generated 40-char token if empty" /></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn" onclick="state.modal=null;render()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTunnel()">${t.save}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openCreateModal() { state.editTarget = null; state.modal = 'tunnel'; render(); }
+function openEditModal(name) { state.editTarget = state.tunnels.find(x => x.name === name) || null; state.modal = 'tunnel'; render(); }
+
+async function saveTunnel() {
+  const payload = {
+    name: document.getElementById('m-name').value.trim(),
+    engine: document.getElementById('m-engine').value,
+    role: document.getElementById('m-role').value,
+    control_port: parseInt(document.getElementById('m-cport').value, 10) || 443,
+    remote_ip: document.getElementById('m-remote').value.trim(),
+    ports: document.getElementById('m-ports').value.trim(),
+    token: document.getElementById('m-token').value.trim()
+  };
+  if (!isDemo) {
+    await fetch('/api/tunnels', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    await fetchLive();
+  }
+  state.modal = null; render();
+}
+
+async function restartTunnel(name) {
+  if (!isDemo) {
+    await fetch('/api/tunnels/action', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, action: 'restart' }) });
+    await fetchLive();
+  }
+}
+async function runProbe() {
+  if (isDemo) return;
+  const h = document.getElementById('probe-host').value, p = document.getElementById('probe-port').value;
+  const r = await fetch(`/api/system/probe?host=${encodeURIComponent(h)}&port=${encodeURIComponent(p)}&count=10`).then(x => x.json());
+  if (r && r.sent) { state.probeResult = r; render(); }
+}
+async function runOptimize() {
+  if (!isDemo) { await fetch('/api/system/optimize', { method: 'POST' }); alert('Kernel BBR + FQ + RPS Applied!'); }
+}
+
+function render() {
+  const t = I18N[state.lang] || I18N.fa;
+  const root = document.getElementById('app');
+
+  if (state.screen === 'splash') {
+    root.innerHTML = `<div class="center-screen">
+      <div class="card glow" style="padding:44px 48px;text-align:center;max-width:480px;width:100%">
+        <div style="position:relative;width:128px;height:128px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center">
+          <svg width="128" height="128" viewBox="0 0 128 128" style="position:absolute;inset:0" class="spin-slow">
+            <circle cx="64" cy="64" r="58" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="28 14" fill="none"/>
+            <circle cx="64" cy="64" r="46" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="10 10" fill="none"/>
+          </svg>
+          <div class="venom-pulse">${venomLogoSVG(62)}</div>
+        </div>
+        <div class="mono" style="font-size:20px;font-weight:800;letter-spacing:3px;color:var(--accent)">${t.brand}</div>
+        <div style="font-size:13px;color:var(--text);margin-top:10px">${t.connecting}</div>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:8px;text-align:start">
+          <div class="badge badge-ok" style="justify-content:space-between;padding:8px 14px"><span>✓ ${t.stage1}</span><span class="mono">OK</span></div>
+          <div class="badge badge-ok" style="justify-content:space-between;padding:8px 14px"><span>✓ ${t.stage2}</span><span class="mono">56 PORTS</span></div>
+          <div class="badge badge-info" style="justify-content:space-between;padding:8px 14px"><span>◉ ${t.stage3}</span><span class="mono">41ms</span></div>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  if (state.screen === 'login') {
+    root.innerHTML = `<div class="center-screen">
+      <form class="card glow login-box" onsubmit="doLogin(event)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:26px">
+          <div class="venom-pulse">${venomLogoSVG(68)}</div>
+          <div class="mono" style="font-size:24px;font-weight:800;letter-spacing:3px;color:var(--accent)">${t.brand}</div>
+          <div style="font-size:13px;color:var(--muted)">${t.loginTitle}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <input id="login-user" class="input mono" placeholder="${t.user}" value="${state.username}" required />
+          <input id="login-pass" type="password" class="input mono" placeholder="${t.pass}" value="••••••••••••••" required />
+          <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:14px">${t.connectBtn}</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:16px;border-top:1px solid var(--border)">
+          <div class="pill-row">
+            ${['fa','en','zh','ru'].map(l => `<button type="button" class="pill ${state.lang===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}
+          </div>
+          <div style="display:flex;gap:6px">
+            ${[['toxic','#22ff66'],['carnage','#ff2a55'],['cyber','#38bdf8'],['light','#059669']].map(([th,col]) =>
+              `<button type="button" class="theme-swatch ${state.theme===th?'active':''}" style="background:${col}" onclick="setTheme('${th}')"></button>`
+            ).join('')}
+          </div>
+        </div>
+      </form>
+    </div>`;
+    return;
+  }
+
+  root.innerHTML = `<div class="app-shell">
+    <aside class="sidebar">
+      <div style="display:flex;align-items:center;gap:12px;padding:6px 6px 18px;border-bottom:1px solid var(--border);margin-bottom:10px">
+        ${venomLogoSVG(38)}
+        <div>
+          <div class="mono" style="font-size:15px;font-weight:800;letter-spacing:1.5px;color:var(--accent)">VENOM</div>
+          <div class="mono" style="font-size:10px;color:var(--muted)">v2.0 · POLYGLOT</div>
+        </div>
+      </div>
+      ${[
+        ['dashboard', '◈', t.navDash],
+        ['tunnels',   '⬡', t.navTun],
+        ['diag',      '⚡', t.navDiag],
+        ['pair',      '∞', t.navPair],
+        ['settings',  '⚙', t.navSet]
+      ].map(([id, ic, lb]) => `
+        <button class="nav-item ${state.view===id?'active':''}" onclick="state.view='${id}';render()">
+          <span style="font-size:16px">${ic}</span> <span>${lb}</span>
+        </button>
+      `).join('')}
+
+      <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px">
+        <div class="pill-row">
+          ${['fa','en','zh','ru'].map(l => `<button class="pill ${state.lang===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px">
+          ${[['toxic','#22ff66'],['carnage','#ff2a55'],['cyber','#38bdf8'],['light','#059669']].map(([th,col]) =>
+            `<button class="theme-swatch ${state.theme===th?'active':''}" style="background:${col}" onclick="setTheme('${th}')"></button>`
+          ).join('')}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div style="font-size:20px;font-weight:800">${t.brand} <span class="badge badge-ok mono">ONLINE</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${t.sub}</div>
+        </div>
+        <div class="pill-row">
+          <span class="badge badge-info mono">IP: ${state.serverIP}</span>
+          <span class="badge badge-warn mono">PORT: ${state.panelPort}</span>
+        </div>
+      </div>
+
+      ${state.view === 'dashboard' ? renderDashboard(t) : ''}
+      ${state.view === 'tunnels'   ? renderTunnelsGrid(t) : ''}
+      ${state.view === 'diag'      ? renderDiag(t) : ''}
+      ${state.view === 'pair'      ? renderPairAndThemes(t) : ''}
+      ${state.view === 'settings'  ? renderSettings(t) : ''}
+    </main>
+  </div>
+  ${renderModal(t)}`;
+}
+
+applyDoc();
+render();
+if (state.screen === 'app') fetchLive();
+</script>
+</body>
+</html>

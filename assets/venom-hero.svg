@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#04080a"/>
+      <stop offset="50%" stop-color="#081319"/>
+      <stop offset="100%" stop-color="#050912"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22ff66"/>
+      <stop offset="50%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#22ff66"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#22ff66" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="320" rx="22" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="22" fill="url(#grid)"/>
+  <rect x="2" y="2" width="1196" height="316" rx="20" fill="none" stroke="#22ff66" stroke-opacity="0.28" stroke-width="2"/>
+
+  <!-- Animated Fiber Tunnel Arcs -->
+  <path id="arcTop" d="M 180 160 C 400 45, 800 45, 1020 160" fill="none" stroke="#22ff66" stroke-opacity="0.25" stroke-width="2.5"/>
+  <path d="M 180 160 C 400 45, 800 45, 1020 160" fill="none" stroke="#22ff66" stroke-width="3" stroke-dasharray="14 26" filter="url(#glow)">
+    <animate attributeName="stroke-dashoffset" from="120" to="0" dur="1.6s" repeatCount="indefinite"/>
+  </path>
+  <path d="M 1020 160 C 800 275, 400 275, 180 160" fill="none" stroke="#00e5ff" stroke-opacity="0.25" stroke-width="2.5"/>
+  <path d="M 1020 160 C 800 275, 400 275, 180 160" fill="none" stroke="#00e5ff" stroke-width="2.6" stroke-dasharray="12 24" filter="url(#glow)">
+    <animate attributeName="stroke-dashoffset" from="108" to="0" dur="1.8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Left Iran Node -->
+  <g transform="translate(130,160)">
+    <circle r="36" fill="#071316" stroke="#22ff66" stroke-width="2.5" filter="url(#glow)"/>
+    <circle r="48" fill="none" stroke="#22ff66" stroke-opacity="0.35" stroke-width="1.5">
+      <animate attributeName="r" values="38;54;38" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0.05;0.6" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <text y="-2" text-anchor="middle" fill="#22ff66" font-family="monospace" font-size="14" font-weight="700">IRAN</text>
+    <text y="15" text-anchor="middle" fill="#8cb3a0" font-family="monospace" font-size="10">ENTRY</text>
+  </g>
+
+  <!-- Right Foreign Node -->
+  <g transform="translate(1070,160)">
+    <circle r="36" fill="#07131c" stroke="#00e5ff" stroke-width="2.5" filter="url(#glow)"/>
+    <circle r="48" fill="none" stroke="#00e5ff" stroke-opacity="0.35" stroke-width="1.5">
+      <animate attributeName="r" values="38;54;38" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-opacity" values="0.6;0.05;0.6" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <text y="-2" text-anchor="middle" fill="#00e5ff" font-family="monospace" font-size="13" font-weight="700">EXIT</text>
+    <text y="15" text-anchor="middle" fill="#8aa9c7" font-family="monospace" font-size="10">GLOBAL</text>
+  </g>
+
+  <!-- Center Venom Emblem & Brand -->
+  <g transform="translate(600,148)">
+    <text y="-16" text-anchor="middle" fill="url(#neon)" font-family="system-ui,Segoe UI,sans-serif" font-size="60" font-weight="900" letter-spacing="12" filter="url(#glow)">VENOM TUNNEL</text>
+    <text y="24" text-anchor="middle" fill="#cbe5d6" font-family="monospace" font-size="16" letter-spacing="4">POLYGLOT GRAPHICAL TUNNEL MATRIX · v2.0</text>
+    <text y="54" text-anchor="middle" fill="#22ff66" font-family="monospace" font-size="13" letter-spacing="2">GO · RUST · TYPESCRIPT · C · SQL · BACKHAUL WSSMUX · XRAY REALITY</text>
+  </g>
+</svg>
